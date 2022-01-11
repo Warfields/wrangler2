@@ -14,7 +14,6 @@
   "dependencies": {
     "@changesets/changelog-github": "^0.4.2",
     "@changesets/cli": "^2.18.0",
-    "@sentry/integrations": "^6.16.1",
     "@sentry/node": "^6.16.1",
     "@types/jest": "^27.0.3",
     "@types/node": "^16.11.11",
