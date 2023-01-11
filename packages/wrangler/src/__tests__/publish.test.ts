@@ -7008,6 +7008,34 @@ addEventListener('fetch', event => {});`
 		});
 	});
 
+	describe("--experiment", () => {
+		it("(cli) should not transform the source code before publishing it", async () => {
+			writeWranglerToml();
+			const scriptContent = `
+      import X from '@cloudflare/no-such-package'; // let's add an import that doesn't exist
+      const xyz = 123; // a statement that would otherwise be compiled out
+    `;
+			fs.writeFileSync("index.js", scriptContent);
+			await runWrangler(
+				"publish index.js --experiment --dry-run --outdir dist"
+			);
+			expect(fs.readFileSync("dist/index.js", "utf-8")).toMatch(scriptContent);
+		});
+
+		it("(config) should not transform the source code before publishing it", async () => {
+			writeWranglerToml({
+				no_bundle: true,
+			});
+			const scriptContent = `
+			import X from '@cloudflare/no-such-package'; // let's add an import that doesn't exist
+			const xyz = 123; // a statement that would otherwise be compiled out
+		`;
+			fs.writeFileSync("index.js", scriptContent);
+			await runWrangler("publish index.js --dry-run --outdir dist");
+			expect(fs.readFileSync("dist/index.js", "utf-8")).toMatch(scriptContent);
+		});
+	});
+
 	it("should publish if the last deployed source check fails", async () => {
 		writeWorkerSource();
 		writeWranglerToml();
@@ -7297,6 +7325,7 @@ function mockUploadWorkerRequest(
 		expectedCompatibilityDate?: string;
 		expectedCompatibilityFlags?: string[];
 		expectedMigrations?: CfWorkerInit["migrations"];
+		expectedExperimental?: boolean;
 		env?: string;
 		legacyEnv?: boolean;
 		sendScriptIds?: boolean;
@@ -7313,6 +7342,7 @@ function mockUploadWorkerRequest(
 		expectedModules = {},
 		expectedCompatibilityDate,
 		expectedCompatibilityFlags,
+		expectedExperimental,
 		env = undefined,
 		legacyEnv = false,
 		expectedMigrations,
@@ -7381,6 +7411,9 @@ function mockUploadWorkerRequest(
 		}
 		if ("expectedCompatibilityFlags" in options) {
 			expect(metadata.compatibility_flags).toEqual(expectedCompatibilityFlags);
+		}
+		if ("expectedExperimental" in options) {
+			expect(metadata.experimental).toEqual(expectedExperimental);
 		}
 		if ("expectedMigrations" in options) {
 			expect(metadata.migrations).toEqual(expectedMigrations);

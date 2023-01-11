@@ -58,6 +58,7 @@ export interface WorkerMetadata {
 	body_part?: string;
 	compatibility_date?: string;
 	compatibility_flags?: string[];
+	experimental?: boolean;
 	usage_model?: "bundled" | "unbound";
 	migrations?: CfDurableObjectMigrations;
 	capnp_schema?: string;
